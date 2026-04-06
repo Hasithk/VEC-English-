@@ -1,15 +1,11 @@
 import { compare } from 'bcryptjs';
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { APP_ROLES, type AppRole } from '@/lib/roles';
 import { findUserByEmail } from '@/lib/user-service';
 
-export const APP_ROLES = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  MAIN_ADMIN: 'MAIN_ADMIN',
-  ADMIN_USER: 'ADMIN_USER',
-} as const;
-
-export type AppRole = (typeof APP_ROLES)[keyof typeof APP_ROLES];
+export { APP_ROLES };
+export type { AppRole };
 
 const isAppRole = (value: string): value is AppRole =>
   Object.values(APP_ROLES).includes(value as AppRole);

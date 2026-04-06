@@ -3,6 +3,8 @@ import { APP_ROLES, AppRole } from '@/lib/auth';
 import { authorizeApiRequest } from '@/lib/rbac';
 import { createUser, findUserByEmail } from '@/lib/user-service';
 
+export const runtime = 'nodejs';
+
 const buildTemporaryPassword = () =>
   `Temp#${Math.random().toString(36).slice(2, 8)}${Math.floor(Math.random() * 90 + 10)}`;
 

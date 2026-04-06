@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { APP_ROLES } from '@/lib/auth';
+import { APP_ROLES } from '@/lib/roles';
 
 const protectedApiPrefixes = [
   '/api/students',
