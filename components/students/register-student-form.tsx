@@ -78,9 +78,11 @@ export function RegisterStudentForm() {
     const formData = new FormData(e.currentTarget);
     const phone = String(formData.get('phone') ?? '').trim();
 
+    setIsSubmitting(true);
+
+    let response: Response;
     try {
-      setIsSubmitting(true);
-      const response = await fetch('/api/students', {
+      response = await fetch('/api/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,30 +97,37 @@ export function RegisterStudentForm() {
           phone: `${countryCode} ${phone}`,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to register student');
-      }
-
-      toast({
-        title: 'Student registered',
-        description: 'The student was saved to the backend successfully.',
-      });
-
-      e.currentTarget.reset();
-      setSelectedCourses([]);
-      setCountryCode('+94');
-      router.refresh();
-      setOpen(false);
     } catch {
       toast({
         title: 'Registration failed',
-        description: 'Please try again.',
+        description: 'Network error while saving student.',
         variant: 'destructive',
       });
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+
+    if (!response.ok) {
+      toast({
+        title: 'Registration failed',
+        description: 'Please check student details and try again.',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    toast({
+      title: 'Student registered',
+      description: 'The student was saved to the backend successfully.',
+    });
+
+    e.currentTarget.reset();
+    setSelectedCourses([]);
+    setCountryCode('+94');
+    setOpen(false);
+    router.refresh();
+    setIsSubmitting(false);
   };
 
   return (
