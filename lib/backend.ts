@@ -75,6 +75,18 @@ const toShortMonth = (date: Date) =>
     month: 'short',
   }).format(date);
 
+const defaultCourseFee = (course: string) => {
+  if (course === 'IELTS') {
+    return 150;
+  }
+
+  if (course === 'ESOL') {
+    return 120;
+  }
+
+  return 100;
+};
+
 export const listStudents = () => [...studentsStore];
 
 export const listPayments = () => [...paymentsStore];
@@ -95,6 +107,21 @@ export const createStudent = (input: NewStudentInput) => {
 
   studentsStore.push(student);
 
+  const currentMonth = toMonthLabel(new Date());
+  for (const course of Array.from(new Set(input.courses))) {
+    const pendingPayment: Payment = {
+      id: nextPaymentId(),
+      studentId: student.id,
+      studentName: student.name,
+      course,
+      month: currentMonth,
+      amount: defaultCourseFee(course),
+      status: 'Pending',
+    };
+
+    paymentsStore.push(pendingPayment);
+  }
+
   return student;
 };
 
@@ -110,6 +137,11 @@ export const updateStudent = (studentId: string, input: UpdateStudentInput) => {
 
   if (input.name !== undefined) {
     student.name = input.name;
+    paymentsStore.forEach((payment) => {
+      if (payment.studentId === student.id) {
+        payment.studentName = input.name as string;
+      }
+    });
   }
 
   if (input.course !== undefined) {
@@ -139,6 +171,12 @@ export const deleteStudent = (studentId: string) => {
   }
 
   const [removed] = studentsStore.splice(index, 1);
+  for (let i = paymentsStore.length - 1; i >= 0; i -= 1) {
+    if (paymentsStore[i].studentId === studentId) {
+      paymentsStore.splice(i, 1);
+    }
+  }
+
   return removed;
 };
 

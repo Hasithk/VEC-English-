@@ -1,17 +1,63 @@
 import { PaymentTable } from '@/components/payments/payment-table';
 import { AddPaymentDialog } from '@/components/payments/add-payment-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 import { listPayments, listStudents } from '@/lib/backend';
+import Link from 'next/link';
 
-export default function PaymentsPage() {
+interface PaymentsPageProps {
+  searchParams?: {
+    category?: string;
+    q?: string;
+    status?: string;
+    month?: string;
+  };
+}
+
+export default function PaymentsPage({ searchParams }: PaymentsPageProps) {
   const payments = listPayments();
   const activeStudents = listStudents().filter((student) => student.status === 'Active');
+  const categories = Array.from(
+    new Set(activeStudents.flatMap((student) => student.courses))
+  ).sort((a, b) => a.localeCompare(b));
+  const months = Array.from(new Set(payments.map((payment) => payment.month))).sort((a, b) =>
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
+  const selectedCategory = searchParams?.category || '';
+  const rawSearchQuery = (searchParams?.q || '').trim();
+  const searchQuery = rawSearchQuery.toLowerCase();
+  const selectedStatus = searchParams?.status || 'all';
+  const selectedMonth = searchParams?.month || 'all';
+
+  const filteredPayments = payments.filter((payment) => {
+    const matchesCategory = selectedCategory ? payment.course === selectedCategory : true;
+    const matchesSearch = searchQuery
+      ? payment.studentName.toLowerCase().includes(searchQuery)
+      : true;
+    const matchesStatus =
+      selectedStatus === 'all'
+        ? true
+        : payment.status.toLowerCase() === selectedStatus.toLowerCase();
+    const matchesMonth = selectedMonth === 'all' ? true : payment.month === selectedMonth;
+
+    return matchesCategory && matchesSearch && matchesStatus && matchesMonth;
+  });
+
+  const queryWithCategory = (category: string) => {
+    const params = new URLSearchParams();
+    params.set('category', category);
+    if (searchQuery) {
+      params.set('q', searchQuery);
+    }
+    if (selectedStatus !== 'all') {
+      params.set('status', selectedStatus);
+    }
+    if (selectedMonth !== 'all') {
+      params.set('month', selectedMonth);
+    }
+    return `/payments?${params.toString()}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -25,32 +71,75 @@ export default function PaymentsPage() {
         <AddPaymentDialog students={activeStudents} />
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Select defaultValue="all">
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Payments</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="overdue">Overdue</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="space-y-3">
+        <p className="text-sm font-medium text-slate-700">Select Grade / Course</p>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => {
+            const isActive = category === selectedCategory;
 
-        <Select defaultValue="april">
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filter by month" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="april">April 2024</SelectItem>
-            <SelectItem value="march">March 2024</SelectItem>
-            <SelectItem value="february">February 2024</SelectItem>
-          </SelectContent>
-        </Select>
+            return (
+              <Link
+                key={category}
+                href={queryWithCategory(category)}
+                className={
+                  isActive
+                    ? 'rounded-full bg-sky-500 px-4 py-2 text-sm font-medium text-white'
+                    : 'rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200'
+                }
+              >
+                {category}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      <PaymentTable payments={payments} />
+      <form className="flex flex-col gap-3 sm:flex-row sm:items-center" method="get" action="/payments">
+        {selectedCategory ? <input type="hidden" name="category" value={selectedCategory} /> : null}
+
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            name="q"
+            defaultValue={rawSearchQuery}
+            placeholder="Search by student name..."
+            className="pl-10"
+          />
+        </div>
+
+        <select
+          name="status"
+          defaultValue={selectedStatus}
+          className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700"
+        >
+          <option value="all">All Statuses</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="overdue">Overdue</option>
+        </select>
+
+        <select
+          name="month"
+          defaultValue={selectedMonth}
+          className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700"
+        >
+          <option value="all">All Months</option>
+          {months.map((month) => (
+            <option key={month} value={month}>
+              {month}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="submit"
+          className="h-10 rounded-md bg-sky-500 px-4 text-sm font-medium text-white hover:bg-sky-600"
+        >
+          Apply
+        </button>
+      </form>
+
+      <PaymentTable payments={filteredPayments} />
     </div>
   );
 }
