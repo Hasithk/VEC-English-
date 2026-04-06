@@ -89,8 +89,9 @@ Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
 1. Copy `.env.example` to `.env.local`.
 2. Set `NEXTAUTH_SECRET` to a secure random value.
-3. Keep `DATABASE_URL` configured for local SQLite.
-4. Run `npm run db:setup` to generate the Prisma client, create schema, and seed users.
+3. Set `DATABASE_URL` to your Supabase Postgres connection string.
+4. Set `DIRECT_URL` to the same Supabase Postgres connection string or the direct connection string from Supabase.
+5. Run `npm run db:generate` then `npm run db:push` to create the schema, and `npm run db:seed` to seed users.
 5. Start the app and sign in at `/login`.
 
 Demo credentials:
