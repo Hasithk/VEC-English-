@@ -7,7 +7,7 @@ export interface Student {
   parentName: string;
   address: string;
   phone: string;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Dropout';
   registrationDate: string;
 }
 

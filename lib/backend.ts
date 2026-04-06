@@ -16,6 +16,14 @@ export interface NewStudentInput {
   phone: string;
 }
 
+export interface UpdateStudentInput {
+  name?: string;
+  course?: string;
+  parentName?: string;
+  phone?: string;
+  status?: Student['status'];
+}
+
 export interface NewPaymentInput {
   studentId: string;
   course: string;
@@ -88,6 +96,50 @@ export const createStudent = (input: NewStudentInput) => {
   studentsStore.push(student);
 
   return student;
+};
+
+export const getStudentById = (studentId: string) =>
+  studentsStore.find((student) => student.id === studentId);
+
+export const updateStudent = (studentId: string, input: UpdateStudentInput) => {
+  const student = studentsStore.find((item) => item.id === studentId);
+
+  if (!student) {
+    return null;
+  }
+
+  if (input.name !== undefined) {
+    student.name = input.name;
+  }
+
+  if (input.course !== undefined) {
+    student.courses = [input.course];
+  }
+
+  if (input.parentName !== undefined) {
+    student.parentName = input.parentName;
+  }
+
+  if (input.phone !== undefined) {
+    student.phone = input.phone;
+  }
+
+  if (input.status !== undefined) {
+    student.status = input.status;
+  }
+
+  return student;
+};
+
+export const deleteStudent = (studentId: string) => {
+  const index = studentsStore.findIndex((student) => student.id === studentId);
+
+  if (index === -1) {
+    return null;
+  }
+
+  const [removed] = studentsStore.splice(index, 1);
+  return removed;
 };
 
 export const createPayment = (input: NewPaymentInput) => {
