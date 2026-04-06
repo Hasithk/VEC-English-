@@ -41,7 +41,7 @@ const courseOptions = [
 ];
 
 const phoneCountryCodes = [
-  { code: '+44', country: 'UK' },
+  { code: '+94', country: 'LK' },
   { code: '+1', country: 'US' },
   { code: '+91', country: 'IN' },
   { code: '+86', country: 'CN' },
@@ -50,7 +50,7 @@ const phoneCountryCodes = [
 export function RegisterStudentForm() {
   const [open, setOpen] = useState(false);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
-  const [countryCode, setCountryCode] = useState('+44');
+  const [countryCode, setCountryCode] = useState('+94');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -107,7 +107,7 @@ export function RegisterStudentForm() {
 
       e.currentTarget.reset();
       setSelectedCourses([]);
-      setCountryCode('+44');
+      setCountryCode('+94');
       router.refresh();
       setOpen(false);
     } catch {
@@ -227,7 +227,7 @@ export function RegisterStudentForm() {
               <Input
                 id="phone"
                 name="phone"
-                placeholder="7700 900123"
+                placeholder="77 123 4567"
                 className="flex-1"
                 required
               />

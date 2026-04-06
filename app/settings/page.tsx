@@ -48,13 +48,13 @@ export default async function SettingsPage() {
             <Label htmlFor="address">Address</Label>
             <Input
               id="address"
-              defaultValue="123 Education Street, London, UK"
+              defaultValue="123 Education Mawatha, Colombo 07, Sri Lanka"
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" defaultValue="+44 20 1234 5678" />
+              <Input id="phone" defaultValue="+94 11 234 5678" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="website">Website</Label>
@@ -77,7 +77,7 @@ export default async function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="whatsappNumber">WhatsApp Business Number</Label>
-            <Input id="whatsappNumber" defaultValue="+44 7700 900000" />
+            <Input id="whatsappNumber" defaultValue="+94 77 700 0000" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="apiKey">WhatsApp API Key</Label>
