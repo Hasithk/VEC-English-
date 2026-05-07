@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -12,15 +13,65 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Payment } from '@/lib/mock-data';
 import { Card } from '@/components/ui/card';
-import { Download } from 'lucide-react';
+import { Download, MessageCircle, Loader } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentTableProps {
   payments: Payment[];
 }
 
 export function PaymentTable({ payments }: PaymentTableProps) {
+  const { toast } = useToast();
+  const [sendingReceiptId, setSendingReceiptId] = useState<string | null>(null);
+
   const handleDownloadReceipt = (paymentId: string) => {
     console.log('Downloading receipt for payment:', paymentId);
+    toast({
+      title: 'Receipt Download',
+      description: 'Receipt download feature coming soon.',
+    });
+  };
+
+  const handleSendWhatsApp = async (payment: Payment) => {
+    if (!payment.studentName) {
+      toast({
+        title: 'Error',
+        description: 'Student information not found.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSendingReceiptId(payment.id);
+    try {
+      const response = await fetch(`/api/payments/${payment.id}/send-receipt`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast({
+          title: 'Failed to send receipt',
+          description: error.message || 'Please try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Success!',
+        description: `Payment receipt sent to ${payment.studentName} via WhatsApp.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to send WhatsApp message. Please try again.',
+        variant: 'destructive',
+      });
+      console.error(error);
+    } finally {
+      setSendingReceiptId(null);
+    }
   };
 
   return (
@@ -78,15 +129,36 @@ export function PaymentTable({ payments }: PaymentTableProps) {
                 </TableCell>
                 <TableCell className="text-right">
                   {payment.status === 'Paid' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDownloadReceipt(payment.id)}
-                      className="text-sky-600 hover:text-sky-700 hover:bg-sky-50"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Receipt
-                    </Button>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadReceipt(payment.id)}
+                        className="text-sky-600 hover:text-sky-700 hover:bg-sky-50"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Receipt
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSendWhatsApp(payment)}
+                        disabled={sendingReceiptId === payment.id}
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                      >
+                        {sendingReceiptId === payment.id ? (
+                          <>
+                            <Loader className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <MessageCircle className="mr-2 h-4 w-4" />
+                            WhatsApp
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>

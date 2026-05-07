@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { APP_ROLES } from '@/lib/auth';
 import { authorizeApiRequest } from '@/lib/rbac';
 import { deletePayment, getPaymentById, updatePayment } from '@/lib/backend';
+import { sendPaymentReceiptViaWhatsApp } from '@/lib/whatsapp-service';
 
 interface RouteContext {
   params: {
@@ -45,6 +46,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
 
+  const statusChangedToPaid = body?.status === 'Paid' && payment.status !== 'Paid';
+
   const updated = updatePayment(context.params.id, {
     course: body?.course !== undefined ? String(body.course) : undefined,
     month: body?.month !== undefined ? String(body.month) : undefined,
@@ -54,6 +57,16 @@ export async function PATCH(request: Request, context: RouteContext) {
     paymentDate: body?.paymentDate !== undefined ? String(body.paymentDate) : undefined,
     status: body?.status,
   });
+
+  // Send WhatsApp receipt when payment is marked as Paid
+  if (statusChangedToPaid && updated) {
+    try {
+      await sendPaymentReceiptViaWhatsApp(updated);
+    } catch (error) {
+      console.error('Failed to send WhatsApp receipt:', error);
+      // Don't fail the payment update if WhatsApp fails
+    }
+  }
 
   return NextResponse.json(updated);
 }

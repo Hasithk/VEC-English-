@@ -22,10 +22,12 @@ export default function StudentsPage({ searchParams }: StudentsPageProps) {
   const rawSearchQuery = (searchParams?.q || '').trim();
   const searchQuery = rawSearchQuery.toLowerCase();
 
+  // If a category is selected, filter by category; otherwise show all students
   const studentsByCategory = selectedCategory
     ? students.filter((student) => student.courses.includes(selectedCategory))
-    : [];
+    : students;
 
+  // Then apply search filter on top
   const filteredStudents = searchQuery
     ? studentsByCategory.filter((student) => {
         const haystack = [student.id, student.name, student.phone, student.parentName]
@@ -82,25 +84,41 @@ export default function StudentsPage({ searchParams }: StudentsPageProps) {
       </div>
 
       {selectedCategory ? (
-        <>
-          <form className="flex items-center gap-4" action="/students" method="get">
-            <input type="hidden" name="category" value={selectedCategory} />
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                name="q"
-                defaultValue={rawSearchQuery}
-                placeholder={`Search ${selectedCategory} students...`}
-                className="pl-10"
-              />
-            </div>
-          </form>
+        <form className="flex items-center gap-4" action="/students" method="get">
+          <input type="hidden" name="category" value={selectedCategory} />
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              name="q"
+              defaultValue={rawSearchQuery}
+              placeholder={`Search ${selectedCategory} students...`}
+              className="pl-10"
+            />
+          </div>
+        </form>
+      ) : (
+        <form className="flex items-center gap-4" action="/students" method="get">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              name="q"
+              defaultValue={rawSearchQuery}
+              placeholder="Search all students by name..."
+              className="pl-10"
+            />
+          </div>
+        </form>
+      )}
 
-          <StudentTable students={filteredStudents} />
-        </>
+      {filteredStudents.length > 0 ? (
+        <StudentTable students={filteredStudents} />
       ) : (
         <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-600">
-          Choose a Grade or Course above to view the student table.
+          {selectedCategory && searchQuery
+            ? 'No students found matching your search.'
+            : selectedCategory
+            ? 'No students enrolled in this course.'
+            : 'Search for students by name or select a course to view the student table.'}
         </div>
       )}
     </div>
